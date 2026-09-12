@@ -10,116 +10,42 @@ import { FeatureCards } from "@/components/FeatureCards";
 import { RuleManagerView } from "@/components/RuleManagerView";
 import { FairnessView } from "@/components/FairnessView";
 import { AuditView } from "@/components/AuditView";
-import { Sparkles } from "lucide-react";
+import { ApplicantsView } from "@/components/ApplicantsView";
+import { DecisionHistoryView } from "@/components/DecisionHistoryView";
+import { ImpactSimulatorView } from "@/components/ImpactSimulatorView";
+import { ReportsView } from "@/components/ReportsView";
+import { SettingsView } from "@/components/SettingsView";
 
-const SAMPLE_PROFILES: Record<string, any> = {
-  "Urban Gig Worker (Thin File)": {
-    full_name: "Sunita Patil",
-    date_of_birth: "1996-05-14",
-    phone_number: "9876543210",
-    employment_type: "gig",
-    monthly_income: 38000,
-    requested_loan_amount: 50000,
-    rent_payment_ratio: 0.96,
-    utility_payment_ratio: 0.94,
-    telecom_payment_ratio: 0.95,
-    telecom_tenure_months: 48,
-    monthly_bank_inflow: 42000,
-    monthly_bank_outflow: 24000,
-    avg_bank_balance: 16000,
-    bounce_count_6m: 0,
-    gig_monthly_earnings: 32000,
-    gig_earnings_stability: 0.91,
-    gig_months_active: 36,
-    gig_rating: 4.85,
-    income_to_expense_ratio: 1.75,
-    payment_consistency: 0.95,
-    data_conflict_count: 0,
-    fraud_risk_score: 0.03,
-    missing_data_ratio: 0.0,
-  },
-  "E-Commerce Delivery Partner": {
-    full_name: "Aarav Sharma",
-    date_of_birth: "1998-11-03",
-    phone_number: "9823456789",
-    employment_type: "gig",
-    monthly_income: 28000,
-    requested_loan_amount: 30000,
-    rent_payment_ratio: 0.90,
-    utility_payment_ratio: 0.88,
-    telecom_payment_ratio: 0.92,
-    telecom_tenure_months: 36,
-    monthly_bank_inflow: 31000,
-    monthly_bank_outflow: 20000,
-    avg_bank_balance: 9000,
-    bounce_count_6m: 0,
-    gig_monthly_earnings: 26000,
-    gig_earnings_stability: 0.82,
-    gig_months_active: 24,
-    gig_rating: 4.65,
-    income_to_expense_ratio: 1.55,
-    payment_consistency: 0.90,
-    data_conflict_count: 0,
-    fraud_risk_score: 0.05,
-    missing_data_ratio: 0.0,
-  },
-  "High-Risk Borderline Applicant": {
-    full_name: "Vikram Das",
-    date_of_birth: "1991-04-12",
-    phone_number: "9711223344",
-    employment_type: "self_employed",
-    monthly_income: 18000,
-    requested_loan_amount: 75000,
-    rent_payment_ratio: 0.62,
-    utility_payment_ratio: 0.65,
-    telecom_payment_ratio: 0.70,
-    telecom_tenure_months: 14,
-    monthly_bank_inflow: 20000,
-    monthly_bank_outflow: 21000,
-    avg_bank_balance: 1800,
-    bounce_count_6m: 3,
-    gig_monthly_earnings: 0,
-    gig_earnings_stability: 0.40,
-    gig_months_active: 0,
-    gig_rating: 3.5,
-    income_to_expense_ratio: 0.95,
-    payment_consistency: 0.64,
-    data_conflict_count: 2,
-    fraud_risk_score: 0.28,
-    missing_data_ratio: 0.15,
-  },
-  "Salaried Junior Executive": {
-    full_name: "Neha Kapoor",
-    date_of_birth: "1997-09-25",
-    phone_number: "9988776655",
-    employment_type: "salaried",
-    monthly_income: 42000,
-    requested_loan_amount: 60000,
-    rent_payment_ratio: 0.98,
-    utility_payment_ratio: 0.95,
-    telecom_payment_ratio: 0.98,
-    telecom_tenure_months: 50,
-    monthly_bank_inflow: 45000,
-    monthly_bank_outflow: 25000,
-    avg_bank_balance: 22000,
-    bounce_count_6m: 0,
-    gig_monthly_earnings: 0,
-    gig_earnings_stability: 0.95,
-    gig_months_active: 0,
-    gig_rating: 5.0,
-    income_to_expense_ratio: 1.80,
-    payment_consistency: 0.97,
-    data_conflict_count: 0,
-    fraud_risk_score: 0.02,
-    missing_data_ratio: 0.0,
-  }
+const emptyFormData = {
+  full_name: "",
+  date_of_birth: "",
+  phone_number: "",
+  employment_type: "gig",
+  monthly_income: "",
+  requested_loan_amount: "",
+  rent_payment_ratio: "",
+  utility_payment_ratio: "",
+  telecom_payment_ratio: "",
+  telecom_tenure_months: "",
+  monthly_bank_inflow: "",
+  monthly_bank_outflow: "",
+  avg_bank_balance: "",
+  bounce_count_6m: "",
+  gig_monthly_earnings: "",
+  gig_earnings_stability: "",
+  gig_months_active: "",
+  gig_rating: "",
+  income_to_expense_ratio: "",
+  payment_consistency: "",
+  data_conflict_count: 0,
+  fraud_risk_score: 0.04,
+  missing_data_ratio: 0.0,
 };
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [metrics, setMetrics] = useState<any>(null);
-  const [selectedSample, setSelectedSample] = useState("Urban Gig Worker (Thin File)");
-  const [formData, setFormData] = useState<any>(SAMPLE_PROFILES["Urban Gig Worker (Thin File)"]);
+  const [formData, setFormData] = useState<any>(emptyFormData);
   const [decisionData, setDecisionData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -139,20 +65,69 @@ export default function Home() {
     loadDashboardSummary();
   }, []);
 
-  const handleLoadSample = (sampleType: string) => {
-    setSelectedSample(sampleType);
-    if (SAMPLE_PROFILES[sampleType]) {
-      setFormData({ ...SAMPLE_PROFILES[sampleType] });
-    }
-  };
-
   const handleSubmitApplication = async (dataToSubmit: any) => {
     setIsSubmitting(true);
     try {
+      const sanitized = {
+        ...dataToSubmit,
+        monthly_income: Number(dataToSubmit.monthly_income) || 0,
+        requested_loan_amount: Number(dataToSubmit.requested_loan_amount) || 0,
+        rent_payment_ratio:
+          dataToSubmit.rent_payment_ratio !== "" && dataToSubmit.rent_payment_ratio != null
+            ? Number(dataToSubmit.rent_payment_ratio)
+            : 0.85,
+        utility_payment_ratio:
+          dataToSubmit.utility_payment_ratio !== "" && dataToSubmit.utility_payment_ratio != null
+            ? Number(dataToSubmit.utility_payment_ratio)
+            : 0.85,
+        telecom_payment_ratio:
+          dataToSubmit.telecom_payment_ratio !== "" && dataToSubmit.telecom_payment_ratio != null
+            ? Number(dataToSubmit.telecom_payment_ratio)
+            : 0.85,
+        telecom_tenure_months:
+          dataToSubmit.telecom_tenure_months !== "" && dataToSubmit.telecom_tenure_months != null
+            ? Number(dataToSubmit.telecom_tenure_months)
+            : 36,
+        monthly_bank_inflow:
+          dataToSubmit.monthly_bank_inflow !== "" && dataToSubmit.monthly_bank_inflow != null
+            ? Number(dataToSubmit.monthly_bank_inflow)
+            : Number(dataToSubmit.monthly_income) || 35000,
+        monthly_bank_outflow:
+          dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null
+            ? Number(dataToSubmit.monthly_bank_outflow)
+            : (Number(dataToSubmit.monthly_income) || 35000) * 0.6,
+        avg_bank_balance:
+          dataToSubmit.avg_bank_balance !== "" && dataToSubmit.avg_bank_balance != null
+            ? Number(dataToSubmit.avg_bank_balance)
+            : 10000,
+        bounce_count_6m:
+          dataToSubmit.bounce_count_6m !== "" && dataToSubmit.bounce_count_6m != null
+            ? parseInt(dataToSubmit.bounce_count_6m)
+            : 0,
+        gig_monthly_earnings:
+          dataToSubmit.gig_monthly_earnings !== "" && dataToSubmit.gig_monthly_earnings != null
+            ? Number(dataToSubmit.gig_monthly_earnings)
+            : dataToSubmit.employment_type === "gig"
+            ? Number(dataToSubmit.monthly_income) || 25000
+            : 0,
+        gig_earnings_stability:
+          dataToSubmit.gig_earnings_stability !== "" && dataToSubmit.gig_earnings_stability != null
+            ? Number(dataToSubmit.gig_earnings_stability)
+            : 0.85,
+        gig_months_active:
+          dataToSubmit.gig_months_active !== "" && dataToSubmit.gig_months_active != null
+            ? Number(dataToSubmit.gig_months_active)
+            : 24,
+        gig_rating:
+          dataToSubmit.gig_rating !== "" && dataToSubmit.gig_rating != null
+            ? Number(dataToSubmit.gig_rating)
+            : 4.5,
+      };
+
       const res = await fetch("http://127.0.0.1:8000/v1/decisions/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSubmit),
+        body: JSON.stringify(sanitized),
       });
       if (res.ok) {
         const result = await res.json();
@@ -170,7 +145,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation - Static on left */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content Pane */}
@@ -178,13 +153,25 @@ export default function Home() {
         <Header />
 
         <main className="p-8 max-w-7xl mx-auto w-full">
+          {activeTab === "applicants" && (
+            <ApplicantsView
+              onSelectApplicant={(app) => {
+                setFormData({ ...emptyFormData, ...app });
+                setActiveTab("new_app");
+              }}
+            />
+          )}
+          {activeTab === "history" && <DecisionHistoryView />}
           {activeTab === "rules" && <RuleManagerView />}
           {activeTab === "fairness" && <FairnessView />}
+          {activeTab === "simulator" && <ImpactSimulatorView />}
           {activeTab === "audit" && <AuditView />}
+          {activeTab === "reports" && <ReportsView />}
+          {activeTab === "settings" && <SettingsView />}
 
           {(activeTab === "dashboard" || activeTab === "new_app") && (
             <>
-              {/* Hero Banner matching screenshot */}
+              {/* Hero Banner */}
               <div className="rounded-3xl bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-emerald-50/80 border border-slate-200/80 p-8 mb-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="max-w-2xl">
                   <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -227,7 +214,6 @@ export default function Home() {
                     formData={formData}
                     setFormData={setFormData}
                     onSubmit={handleSubmitApplication}
-                    onLoadSample={handleLoadSample}
                     isSubmitting={isSubmitting}
                   />
                 </div>
@@ -235,9 +221,6 @@ export default function Home() {
                 <div className="lg:col-span-4 sticky top-24">
                   <DecisionPreview
                     decisionData={decisionData}
-                    selectedSample={selectedSample}
-                    setSelectedSample={setSelectedSample}
-                    onLoadSample={handleLoadSample}
                     isLoading={isSubmitting}
                   />
                 </div>
