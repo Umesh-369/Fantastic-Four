@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between min-h-screen py-6 px-4 shrink-0">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between h-screen sticky top-0 py-6 px-4 shrink-0 overflow-y-auto select-none">
       <div>
         {/* Brand Logo */}
         <div className="flex items-center space-x-3 px-3 mb-8 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
