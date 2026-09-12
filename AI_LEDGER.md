@@ -4,7 +4,6 @@
 
 **SahajCredit (सहज क्रेडिट) — Production Microservice Underwriting Platform**  
 **Team Name**: Fantastic Four • **Event**: VTapp — Round 02 Evaluation  
-**Audited Date**: 2026-09-12 • **Ledger Version**: 2.0.0 • **Rubric Target**: 150/150 Points
 
 [![AI Assistance Audit](https://img.shields.io/badge/AI_Assistance-Audited_%26_Verified-blue?style=for-the-badge&logo=openai&logoColor=white)](AI_LEDGER.md)
 [![Human-in-the-Loop](https://img.shields.io/badge/Architecture-100%25_Human_Governed-emerald?style=for-the-badge&logo=shield&logoColor=white)](AI_LEDGER.md)
