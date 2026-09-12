@@ -573,6 +573,4 @@ SahajCredit/
 
 **Team Name**: Fantastic Four  
 **Event**: VTapp — Round 02  
-**Standard**: 150-Point Round 02 Rubric Conformance  
-
 *For an exhaustive, component-by-component audit of AI collaboration, human architecture decisions, and code provenance, refer to [AI_LEDGER.md](AI_LEDGER.md).*
