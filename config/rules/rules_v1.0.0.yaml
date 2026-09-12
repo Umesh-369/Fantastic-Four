@@ -1,0 +1,47 @@
+version: "v1.0.0"
+effective_date: "2026-09-12T00:00:00Z"
+description: "Baseline thin-file underwriting policy ruleset"
+author: "Credit Risk Policy Committee"
+
+thresholds:
+  risk_score_approve_max: 35.0
+  risk_score_review_max: 60.0
+  min_monthly_income: 15000.0
+  max_bounce_count_6m: 2
+  min_rent_payment_ratio: 0.70
+  min_income_to_expense_ratio: 1.10
+  max_fraud_risk_score: 0.40
+  max_data_conflict_count: 2
+
+policies:
+  hard_knockouts:
+    - rule_id: "HK_FRAUD_RISK"
+      field: "fraud_risk_score"
+      operator: ">"
+      value: 0.40
+      action: "REJECT"
+      reason: "Elevated intake fraud risk score exceeds safety threshold"
+    - rule_id: "HK_EXCESSIVE_BOUNCES"
+      field: "bounce_count_6m"
+      operator: ">"
+      value: 4
+      action: "REJECT"
+      reason: "Excessive banking return/bounce count (greater than 4 in 6 months)"
+    - rule_id: "HK_MIN_INCOME"
+      field: "monthly_income"
+      operator: "<"
+      value: 10000.0
+      action: "REJECT"
+      reason: "Monthly income below absolute minimum underwriting floor"
+
+  score_policy:
+    approve_condition:
+      max_score: 35.0
+      min_income: 15000.0
+      max_bounces: 2
+      decision: "APPROVE"
+    review_condition:
+      max_score: 60.0
+      decision: "REVIEW"
+    decline_condition:
+      decision: "REJECT"

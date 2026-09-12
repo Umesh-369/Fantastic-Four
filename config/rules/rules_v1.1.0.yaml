@@ -1,0 +1,47 @@
+version: "v1.1.0"
+effective_date: "2026-09-12T08:00:00Z"
+description: "H+8 policy adjustment: Expanded gig eligibility with calibrated bounce controls"
+author: "Credit Risk Policy Committee"
+
+thresholds:
+  risk_score_approve_max: 38.0
+  risk_score_review_max: 60.0
+  min_monthly_income: 12000.0
+  max_bounce_count_6m: 2
+  min_rent_payment_ratio: 0.68
+  min_income_to_expense_ratio: 1.05
+  max_fraud_risk_score: 0.38
+  max_data_conflict_count: 2
+
+policies:
+  hard_knockouts:
+    - rule_id: "HK_FRAUD_RISK"
+      field: "fraud_risk_score"
+      operator: ">"
+      value: 0.38
+      action: "REJECT"
+      reason: "Calibrated fraud threshold triggered"
+    - rule_id: "HK_EXCESSIVE_BOUNCES"
+      field: "bounce_count_6m"
+      operator: ">"
+      value: 3
+      action: "REJECT"
+      reason: "Banking return/bounce count exceeds calibrated threshold (>3 in 6m)"
+    - rule_id: "HK_MIN_INCOME"
+      field: "monthly_income"
+      operator: "<"
+      value: 8000.0
+      action: "REJECT"
+      reason: "Monthly income below revised underwriting floor"
+
+  score_policy:
+    approve_condition:
+      max_score: 38.0
+      min_income: 12000.0
+      max_bounces: 2
+      decision: "APPROVE"
+    review_condition:
+      max_score: 60.0
+      decision: "REVIEW"
+    decline_condition:
+      decision: "REJECT"

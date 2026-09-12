@@ -1,0 +1,34 @@
+[
+  {
+    "change_id": "CHG-001",
+    "rule_version": "v1.0.0",
+    "time_received": "2026-09-12T10:00:00Z",
+    "time_completed": "2026-09-12T10:02:15Z",
+    "author": "Risk Governance Team",
+    "description": "Baseline thin-file policy ruleset activation",
+    "files_changed": [
+      "config/rules/rules_v1.0.0.yaml",
+      "config/rules/active_pointer.yaml"
+    ],
+    "config_diff": "Initial release",
+    "affected_services": ["rule-service"],
+    "code_changes_required": false,
+    "test_results": "PASS (contract and decision tests verified)"
+  },
+  {
+    "change_id": "CHG-002",
+    "rule_version": "v1.1.0",
+    "time_received": "2026-09-12T12:00:00Z",
+    "time_completed": "2026-09-12T12:01:42Z",
+    "author": "Underwriting Operations",
+    "description": "H+8 Rapid Change: Lowered min_monthly_income from 15k to 12k and calibrated risk_score_approve_max to 38.0",
+    "files_changed": [
+      "config/rules/rules_v1.1.0.yaml",
+      "config/rules/active_pointer.yaml"
+    ],
+    "config_diff": "- min_monthly_income: 15000.0\n+ min_monthly_income: 12000.0\n- risk_score_approve_max: 35.0\n+ risk_score_approve_max: 38.0",
+    "affected_services": ["rule-service (config hot-reload only)"],
+    "code_changes_required": false,
+    "test_results": "PASS (100% zero-downtime, no edits to Credit Engine, Gateway, or Audit Service)"
+  }
+]
