@@ -18,7 +18,6 @@ interface ApplicationWizardProps {
   formData: any;
   setFormData: (data: any) => void;
   onSubmit: (data: any) => void;
-  onLoadSample: (sampleType: string) => void;
   isSubmitting: boolean;
 }
 
@@ -26,13 +25,14 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   formData,
   setFormData,
   onSubmit,
-  onLoadSample,
   isSubmitting
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const updateField = (field: string, val: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: val }));
+    setValidationError(null);
   };
 
   const steps = [
@@ -41,6 +41,29 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     { num: 3, label: "Review & Submit" },
     { num: 4, label: "Decision" },
   ];
+
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!formData.full_name?.trim()) {
+        setValidationError("Please enter the applicant's full name.");
+        return;
+      }
+      if (!formData.monthly_income || Number(formData.monthly_income) <= 0) {
+        setValidationError("Please enter a valid monthly income.");
+        return;
+      }
+      if (!formData.phone_number?.trim() || formData.phone_number.trim().length < 10) {
+        setValidationError("Please enter a valid 10-digit phone number.");
+        return;
+      }
+      if (!formData.requested_loan_amount || Number(formData.requested_loan_amount) <= 0) {
+        setValidationError("Please enter a valid requested loan amount.");
+        return;
+      }
+    }
+    setValidationError(null);
+    setCurrentStep((s) => s + 1);
+  };
 
   return (
     <div className="bg-white rounded-3xl p-7 border border-slate-200/80 shadow-xs">
@@ -59,14 +82,6 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => onLoadSample("Urban Gig Worker (Thin File)")}
-          className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200/80 transition-colors shrink-0"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          <span>Use Sample Data</span>
-        </button>
       </div>
 
       {/* Stepper */}
@@ -135,7 +150,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <div className="relative">
                   <input
                     type="date"
-                    value={formData.date_of_birth || "1995-08-20"}
+                    value={formData.date_of_birth || ""}
                     onChange={(e) => updateField("date_of_birth", e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                   />
@@ -167,7 +182,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   </span>
                   <input
                     type="tel"
-                    placeholder="Enter phone number"
+                    placeholder="Enter 10-digit phone number"
                     value={formData.phone_number || ""}
                     onChange={(e) => updateField("phone_number", e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-r-xl px-3.5 py-2.5 text-xs text-slate-800"
@@ -201,8 +216,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   step="0.01"
                   min="0"
                   max="1"
-                  value={formData.rent_payment_ratio ?? 0.95}
-                  onChange={(e) => updateField("rent_payment_ratio", parseFloat(e.target.value) || 0)}
+                  placeholder="e.g. 0.95"
+                  value={formData.rent_payment_ratio ?? ""}
+                  onChange={(e) => updateField("rent_payment_ratio", e.target.value === "" ? "" : parseFloat(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -216,8 +232,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   step="0.01"
                   min="0"
                   max="1"
-                  value={formData.utility_payment_ratio ?? 0.92}
-                  onChange={(e) => updateField("utility_payment_ratio", parseFloat(e.target.value) || 0)}
+                  placeholder="e.g. 0.92"
+                  value={formData.utility_payment_ratio ?? ""}
+                  onChange={(e) => updateField("utility_payment_ratio", e.target.value === "" ? "" : parseFloat(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -228,8 +245,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </label>
                 <input
                   type="number"
-                  value={formData.telecom_tenure_months ?? 48}
-                  onChange={(e) => updateField("telecom_tenure_months", parseFloat(e.target.value) || 0)}
+                  placeholder="e.g. 36"
+                  value={formData.telecom_tenure_months ?? ""}
+                  onChange={(e) => updateField("telecom_tenure_months", e.target.value === "" ? "" : parseFloat(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -240,8 +258,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </label>
                 <input
                   type="number"
-                  value={formData.bounce_count_6m ?? 0}
-                  onChange={(e) => updateField("bounce_count_6m", parseInt(e.target.value) || 0)}
+                  placeholder="e.g. 0"
+                  value={formData.bounce_count_6m ?? ""}
+                  onChange={(e) => updateField("bounce_count_6m", e.target.value === "" ? "" : parseInt(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -252,8 +271,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </label>
                 <input
                   type="number"
-                  value={formData.monthly_bank_inflow ?? 38000}
-                  onChange={(e) => updateField("monthly_bank_inflow", parseFloat(e.target.value) || 0)}
+                  placeholder="e.g. 38000"
+                  value={formData.monthly_bank_inflow ?? ""}
+                  onChange={(e) => updateField("monthly_bank_inflow", e.target.value === "" ? "" : parseFloat(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -264,8 +284,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </label>
                 <input
                   type="number"
-                  value={formData.avg_bank_balance ?? 12000}
-                  onChange={(e) => updateField("avg_bank_balance", parseFloat(e.target.value) || 0)}
+                  placeholder="e.g. 12000"
+                  value={formData.avg_bank_balance ?? ""}
+                  onChange={(e) => updateField("avg_bank_balance", e.target.value === "" ? "" : parseFloat(e.target.value))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                 />
               </div>
@@ -279,8 +300,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.gig_earnings_stability ?? 0.88}
-                      onChange={(e) => updateField("gig_earnings_stability", parseFloat(e.target.value) || 0)}
+                      placeholder="e.g. 0.85"
+                      value={formData.gig_earnings_stability ?? ""}
+                      onChange={(e) => updateField("gig_earnings_stability", e.target.value === "" ? "" : parseFloat(e.target.value))}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                     />
                   </div>
@@ -291,8 +313,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     <input
                       type="number"
                       step="0.1"
-                      value={formData.gig_rating ?? 4.8}
-                      onChange={(e) => updateField("gig_rating", parseFloat(e.target.value) || 0)}
+                      placeholder="e.g. 4.8"
+                      value={formData.gig_rating ?? ""}
+                      onChange={(e) => updateField("gig_rating", e.target.value === "" ? "" : parseFloat(e.target.value))}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
                     />
                   </div>
@@ -307,13 +330,19 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 Application Review Summary
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div><span className="text-slate-400">Applicant:</span> <strong className="text-slate-700">{formData.full_name}</strong></div>
-                <div><span className="text-slate-400">Monthly Income:</span> <strong className="text-slate-700">₹{formData.monthly_income?.toLocaleString()}</strong></div>
-                <div><span className="text-slate-400">Loan Requested:</span> <strong className="text-slate-700">₹{formData.requested_loan_amount?.toLocaleString()}</strong></div>
-                <div><span className="text-slate-400">Segment:</span> <strong className="text-slate-700 capitalize">{formData.employment_type}</strong></div>
-                <div><span className="text-slate-400">Rent Ratio:</span> <strong className="text-slate-700">{((formData.rent_payment_ratio || 0.95)*100).toFixed(0)}%</strong></div>
-                <div><span className="text-slate-400">Past Bounces:</span> <strong className="text-slate-700">{formData.bounce_count_6m || 0}</strong></div>
+                <div><span className="text-slate-400">Applicant:</span> <strong className="text-slate-700">{formData.full_name || "—"}</strong></div>
+                <div><span className="text-slate-400">Monthly Income:</span> <strong className="text-slate-700">{formData.monthly_income ? `₹${Number(formData.monthly_income).toLocaleString()}` : "—"}</strong></div>
+                <div><span className="text-slate-400">Loan Requested:</span> <strong className="text-slate-700">{formData.requested_loan_amount ? `₹${Number(formData.requested_loan_amount).toLocaleString()}` : "—"}</strong></div>
+                <div><span className="text-slate-400">Segment:</span> <strong className="text-slate-700 capitalize">{formData.employment_type || "—"}</strong></div>
+                <div><span className="text-slate-400">Rent Ratio:</span> <strong className="text-slate-700">{formData.rent_payment_ratio !== "" && formData.rent_payment_ratio != null ? `${(Number(formData.rent_payment_ratio)*100).toFixed(0)}%` : "—"}</strong></div>
+                <div><span className="text-slate-400">Past Bounces:</span> <strong className="text-slate-700">{formData.bounce_count_6m !== "" && formData.bounce_count_6m != null ? formData.bounce_count_6m : "0"}</strong></div>
               </div>
+            </div>
+          )}
+
+          {validationError && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              {validationError}
             </div>
           )}
 
@@ -331,7 +360,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
             {currentStep < 3 ? (
               <button
-                onClick={() => setCurrentStep((s) => s + 1)}
+                onClick={handleNext}
                 className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-sm transition-all"
               >
                 <span>Next</span>

@@ -1,21 +1,15 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, AlertTriangle, XCircle, ShieldCheck, UserCheck, Sparkles, RefreshCw } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ShieldCheck, Sparkles } from "lucide-react";
 
 interface DecisionPreviewProps {
   decisionData: any | null;
-  selectedSample: string;
-  setSelectedSample: (val: string) => void;
-  onLoadSample: (sampleType: string) => void;
   isLoading: boolean;
 }
 
 export const DecisionPreview: React.FC<DecisionPreviewProps> = ({
   decisionData,
-  selectedSample,
-  setSelectedSample,
-  onLoadSample,
   isLoading,
 }) => {
   const score = decisionData?.risk_score;
@@ -148,13 +142,15 @@ export const DecisionPreview: React.FC<DecisionPreviewProps> = ({
             )}
 
             {/* Audit Chain Fingerprint */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[10px] text-slate-500 font-mono">
-              <div className="flex items-center">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600 mr-1.5" />
-                <span>{auditId || "aud_verified"}</span>
+            {auditId && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[10px] text-slate-500 font-mono">
+                <div className="flex items-center">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600 mr-1.5" />
+                  <span>{auditId}</span>
+                </div>
+                <span className="text-emerald-600 font-semibold">Chained & Valid</span>
               </div>
-              <span className="text-emerald-600 font-semibold">Chained & Valid</span>
-            </div>
+            )}
           </div>
         ) : (
           <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center">
@@ -163,35 +159,6 @@ export const DecisionPreview: React.FC<DecisionPreviewProps> = ({
             </p>
           </div>
         )}
-      </div>
-
-      {/* Sample Applicant Dropdown Box */}
-      <div className="mt-6 pt-5 border-t border-slate-100">
-        <div className="flex items-center space-x-2 text-xs font-bold text-slate-800 mb-1">
-          <UserCheck className="w-4 h-4 text-blue-600" />
-          <span>Sample Applicant</span>
-        </div>
-        <p className="text-[11px] text-slate-400 mb-3">Try with a pre-filled profile</p>
-
-        <div className="flex items-center space-x-2">
-          <select
-            value={selectedSample}
-            onChange={(e) => setSelectedSample(e.target.value)}
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 font-medium"
-          >
-            <option value="Urban Gig Worker (Thin File)">Urban Gig Worker (Thin File)</option>
-            <option value="E-Commerce Delivery Partner">E-Commerce Delivery Partner</option>
-            <option value="High-Risk Borderline Applicant">High-Risk Borderline Applicant</option>
-            <option value="Salaried Junior Executive">Salaried Junior Executive</option>
-          </select>
-
-          <button
-            onClick={() => onLoadSample(selectedSample)}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
-          >
-            Load Sample
-          </button>
-        </div>
       </div>
     </div>
   );
