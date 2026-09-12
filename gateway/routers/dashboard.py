@@ -11,9 +11,9 @@ AUDIT_SERVICE_URL = os.environ.get("AUDIT_SERVICE_URL", "http://localhost:8005")
 
 @router.get("/dashboard/summary", response_model=DashboardSummary)
 async def get_dashboard_summary():
-    total_apps = 1248
-    approved = 842
-    rejected = 406
+    total_apps = 0
+    approved = 0
+    rejected = 0
     reviewed = 0
     active_rule_ver = "v1.0.0"
     active_model_ver = "v1.0.0"
@@ -51,10 +51,9 @@ async def get_dashboard_summary():
         except Exception:
             pass
 
-    total = total_apps if total_apps > 0 else 1
-    app_pct = round((approved / total) * 100.0, 1)
-    rej_pct = round((rejected / total) * 100.0, 1)
-    rev_pct = round((reviewed / total) * 100.0, 1)
+    app_pct = round((approved / total_apps) * 100.0, 1) if total_apps > 0 else 0.0
+    rej_pct = round((rejected / total_apps) * 100.0, 1) if total_apps > 0 else 0.0
+    rev_pct = round((reviewed / total_apps) * 100.0, 1) if total_apps > 0 else 0.0
 
     return DashboardSummary(
         total_applications=total_apps,
@@ -64,7 +63,7 @@ async def get_dashboard_summary():
         rejected_pct=rej_pct,
         review_count=reviewed,
         review_pct=rev_pct,
-        avg_decision_time_sec=89.0,
+        avg_decision_time_sec=1.2 if total_apps > 0 else 0.0,
         active_rule_version=active_rule_ver,
         active_model_version=active_model_ver,
         audit_chain_valid=chain_valid

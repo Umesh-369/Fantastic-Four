@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, CheckCircle, XCircle, Clock, TrendingUp, Check } from "lucide-react";
+import { Users, CheckCircle, XCircle, Clock, Check } from "lucide-react";
 
 interface MetricsData {
   total_applications: number;
@@ -19,12 +19,12 @@ interface MetricCardsProps {
 }
 
 export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
-  const total = metrics?.total_applications ?? 1248;
-  const approved = metrics?.approved_count ?? 842;
-  const approvedPct = metrics?.approved_pct ?? 67.5;
-  const rejected = metrics?.rejected_count ?? 406;
-  const rejectedPct = metrics?.rejected_pct ?? 32.5;
-  const avgTime = metrics?.avg_decision_time_sec ?? 89.0;
+  const total = metrics?.total_applications ?? 0;
+  const approved = metrics?.approved_count ?? 0;
+  const approvedPct = metrics?.approved_pct ?? 0;
+  const rejected = metrics?.rejected_count ?? 0;
+  const rejectedPct = metrics?.rejected_pct ?? 0;
+  const avgTime = metrics?.avg_decision_time_sec ?? 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -43,9 +43,9 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
             </div>
           </div>
         </div>
-        <div className="flex items-center text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-          <TrendingUp className="w-3 h-3 mr-1" />
-          <span>12%</span>
+        <div className="flex items-center text-[11px] font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5"></span>
+          <span>Live</span>
         </div>
       </div>
 
