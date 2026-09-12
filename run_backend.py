@@ -14,6 +14,13 @@ PYTHON_EXEC = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
 if not os.path.exists(PYTHON_EXEC):
     PYTHON_EXEC = sys.executable
 
+# Allow Render or cloud environments to specify the public Gateway port via $PORT
+GATEWAY_PORT = int(os.environ.get("PORT", 8000))
+
+# Ensure data directories exist for SQLite persistence
+os.makedirs(os.path.join(ROOT_DIR, "data", "app_data"), exist_ok=True)
+os.makedirs(os.path.join(ROOT_DIR, "data", "audit_data"), exist_ok=True)
+
 SERVICES = [
     {
         "name": "Application Service",
@@ -54,7 +61,7 @@ SERVICES = [
     {
         "name": "API Gateway",
         "dir": os.path.join(ROOT_DIR, "gateway"),
-        "port": 8000,
+        "port": GATEWAY_PORT,
         "app": "main:app"
     }
 ]
@@ -92,7 +99,7 @@ def main():
         print("\n" + "=" * 70)
         print("          ALL 7 BACKEND SERVICES ARE RUNNING!")
         print("=" * 70)
-        print("  - API Gateway:          http://localhost:8000  (Swagger: http://localhost:8000/docs)")
+        print(f"  - API Gateway:          http://0.0.0.0:{GATEWAY_PORT}  (Swagger: http://0.0.0.0:{GATEWAY_PORT}/docs)")
         print("  - Application Service:  http://localhost:8001  (Swagger: http://localhost:8001/docs)")
         print("  - Credit Engine:        http://localhost:8002  (Swagger: http://localhost:8002/docs)")
         print("  - Rule Service:         http://localhost:8003  (Swagger: http://localhost:8003/docs)")
@@ -100,7 +107,25 @@ def main():
         print("  - Audit Service:        http://localhost:8005  (Swagger: http://localhost:8005/docs)")
         print("  - Fairness Service:     http://localhost:8006  (Swagger: http://localhost:8006/docs)")
         print("=" * 70)
-        print("\nPress Ctrl+C at any time to stop all backend services cleanly.\n")
+        print("\nPress Ctrl+C or send SIGTERM to stop all backend services cleanly.\n")
+
+        def shutdown_handler(signum, frame):
+            print("\nShutting down all backend microservices...")
+            for name, p, port in processes:
+                p.terminate()
+                try:
+                    p.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    p.kill()
+            print("[OK] All backend services stopped.")
+            sys.exit(0)
+
+        # Register signal handlers
+        try:
+            signal.signal(signal.SIGTERM, shutdown_handler)
+            signal.signal(signal.SIGINT, shutdown_handler)
+        except (ValueError, AttributeError):
+            pass
 
         # Keep alive and monitor
         while True:
@@ -110,13 +135,12 @@ def main():
                     print(f"[!] Warning: {name} (port {port}) exited with code {poll}")
             time.sleep(2)
 
-    except KeyboardInterrupt:
-        print("\n\nShutting down all backend microservices...")
+    except (KeyboardInterrupt, SystemExit):
         for name, p, port in processes:
-            p.terminate()
             try:
+                p.terminate()
                 p.wait(timeout=2)
-            except subprocess.TimeoutExpired:
+            except Exception:
                 p.kill()
         print("[OK] All backend services stopped.")
 

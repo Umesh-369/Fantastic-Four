@@ -15,6 +15,7 @@ import { DecisionHistoryView } from "@/components/DecisionHistoryView";
 import { ImpactSimulatorView } from "@/components/ImpactSimulatorView";
 import { ReportsView } from "@/components/ReportsView";
 import { SettingsView } from "@/components/SettingsView";
+import { getApiBaseUrl } from "@/lib/api";
 
 const emptyFormData = {
   full_name: "",
@@ -52,7 +53,7 @@ export default function Home() {
   // Fetch live dashboard summary from Gateway
   const loadDashboardSummary = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/v1/dashboard/summary");
+      const res = await fetch(`${getApiBaseUrl()}/v1/dashboard/summary`);
       if (res.ok) {
         setMetrics(await res.json());
       }
@@ -189,7 +190,7 @@ export default function Home() {
           ? Number(dataToSubmit.missing_data_ratio)
           : 0.0;
 
-      const res = await fetch("http://127.0.0.1:8000/v1/decisions/evaluate", {
+      const res = await fetch(`${getApiBaseUrl()}/v1/decisions/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sanitized),

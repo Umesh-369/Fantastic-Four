@@ -145,3 +145,16 @@ def test_fairness_service_contract():
     assert data["status"] == "insufficient_group_labels"
     assert "available_columns" in data
     assert "employment_segment_analysis" in data
+
+def test_gateway_contract():
+    client = TestClient(gateway_app)
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "healthy"
+    assert resp.json()["service"] == "gateway"
+
+    status_resp = client.get("/v1/system/services-status")
+    assert status_resp.status_code == 200
+    assert "services" in status_resp.json()
+    assert len(status_resp.json()["services"]) == 7
+

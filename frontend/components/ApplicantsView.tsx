@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Users, Search, RefreshCw, ChevronRight } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 interface ApplicantsViewProps {
   onSelectApplicant?: (applicant: any) => void;
@@ -17,7 +18,7 @@ export const ApplicantsView: React.FC<ApplicantsViewProps> = ({ onSelectApplican
   const fetchApplicants = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8001/v1/applicants?limit=100");
+      const res = await fetch(`${getApiBaseUrl()}/v1/applicants?limit=100`);
       if (res.ok) {
         const data = await res.json();
         setApplicants(data.items || []);

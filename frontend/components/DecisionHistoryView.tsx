@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Clock, Search, RefreshCw, CheckCircle2, AlertTriangle, XCircle, ShieldCheck } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const DecisionHistoryView: React.FC = () => {
   const [records, setRecords] = useState<any[]>([]);
@@ -13,7 +14,7 @@ export const DecisionHistoryView: React.FC = () => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8005/v1/audit/records?limit=100");
+      const res = await fetch(`${getApiBaseUrl()}/v1/audit/records?limit=100`);
       if (res.ok) {
         const data = await res.json();
         setRecords(data.items || []);

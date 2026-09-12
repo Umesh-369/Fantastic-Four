@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, CheckCircle2, AlertTriangle, RefreshCw, Play, Key } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const AuditView: React.FC = () => {
   const [verification, setVerification] = useState<any>(null);
@@ -12,10 +13,10 @@ export const AuditView: React.FC = () => {
 
   const fetchAuditData = async () => {
     try {
-      const vRes = await fetch("http://127.0.0.1:8005/v1/audit/verify");
+      const vRes = await fetch(`${getApiBaseUrl()}/v1/audit/verify`);
       if (vRes.ok) setVerification(await vRes.json());
 
-      const rRes = await fetch("http://127.0.0.1:8005/v1/audit/records?limit=25");
+      const rRes = await fetch(`${getApiBaseUrl()}/v1/audit/records?limit=25`);
       if (rRes.ok) {
         const data = await rRes.json();
         setRecords(data.items || []);
@@ -36,7 +37,7 @@ export const AuditView: React.FC = () => {
     setLoading(true);
     setReproduceResult(null);
     try {
-      const res = await fetch(`http://127.0.0.1:8005/v1/audit/${auditId}/reproduce`);
+      const res = await fetch(`${getApiBaseUrl()}/v1/audit/${auditId}/reproduce`);
       if (res.ok) {
         setReproduceResult(await res.json());
       }

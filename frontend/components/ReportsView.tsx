@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FileText, ShieldCheck, Scale, Sliders, CheckCircle2, Download, Printer } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const ReportsView: React.FC = () => {
   const [summary, setSummary] = useState<any>(null);
@@ -14,9 +15,9 @@ export const ReportsView: React.FC = () => {
       setLoading(true);
       try {
         const [sumRes, audRes, fairRes] = await Promise.allSettled([
-          fetch("http://127.0.0.1:8000/v1/dashboard/summary"),
-          fetch("http://127.0.0.1:8005/v1/audit/verify"),
-          fetch("http://127.0.0.1:8006/v1/fairness/report"),
+          fetch(`${getApiBaseUrl()}/v1/dashboard/summary`),
+          fetch(`${getApiBaseUrl()}/v1/audit/verify`),
+          fetch(`${getApiBaseUrl()}/v1/fairness/report`),
         ]);
 
         if (sumRes.status === "fulfilled" && sumRes.value.ok) {

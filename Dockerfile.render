@@ -1,0 +1,39 @@
+# SahajCredit Backend Microservices Container for Render & Cloud Deployment
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    APPLICATION_DB_PATH=/app/data/app_data/application_service.db \
+    AUDIT_DB_PATH=/app/data/audit_data/audit_service.db
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend codebase
+COPY config ./config
+COPY gateway ./gateway
+COPY ml ./ml
+COPY services ./services
+COPY run_backend.py .
+
+# Create storage directories
+RUN mkdir -p /app/data/app_data /app/data/audit_data
+
+# Expose dynamic Gateway port
+EXPOSE 8000
+
+# Health check against Gateway /health endpoint
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+
+# Launch all 7 microservices via run_backend.py
+CMD ["python", "run_backend.py"]

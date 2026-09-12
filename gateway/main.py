@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from routers.decision import router as decision_router
 from routers.dashboard import router as dashboard_router
+from routers.proxy import router as proxy_router
 
 app = FastAPI(
     title="SahajCredit - API Gateway",
@@ -24,6 +25,7 @@ app.add_middleware(
 
 app.include_router(decision_router)
 app.include_router(dashboard_router)
+app.include_router(proxy_router)
 
 @app.get("/health")
 def health_check():

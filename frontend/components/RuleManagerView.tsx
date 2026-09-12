@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Sliders, CheckCircle2, History, ArrowRightLeft, FileCode2, AlertCircle } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const RuleManagerView: React.FC = () => {
   const [activeVersion, setActiveVersion] = useState("v1.0.0");
@@ -13,19 +14,19 @@ export const RuleManagerView: React.FC = () => {
 
   const fetchRuleData = async () => {
     try {
-      const activeRes = await fetch("http://127.0.0.1:8003/v1/rules/active");
+      const activeRes = await fetch(`${getApiBaseUrl()}/v1/rules/active`);
       if (activeRes.ok) {
         const data = await activeRes.json();
         setActiveVersion(data.active_version);
         setActiveRules(data.rule_set);
       }
 
-      const versRes = await fetch("http://127.0.0.1:8003/v1/rules/versions");
+      const versRes = await fetch(`${getApiBaseUrl()}/v1/rules/versions`);
       if (versRes.ok) {
         setVersions(await versRes.json());
       }
 
-      const clRes = await fetch("http://127.0.0.1:8003/v1/rules/changelog");
+      const clRes = await fetch(`${getApiBaseUrl()}/v1/rules/changelog`);
       if (clRes.ok) {
         setChangelog(await clRes.json());
       }
@@ -42,7 +43,7 @@ export const RuleManagerView: React.FC = () => {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("http://127.0.0.1:8003/v1/rules/active", {
+      const res = await fetch(`${getApiBaseUrl()}/v1/rules/active`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ version: targetVer }),

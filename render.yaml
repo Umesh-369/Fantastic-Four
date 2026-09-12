@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: sahajcredit-api
+    runtime: docker
+    dockerfilePath: Dockerfile.render
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: APPLICATION_DB_PATH
+        value: /app/data/app_data/application_service.db
+      - key: AUDIT_DB_PATH
+        value: /app/data/audit_data/audit_service.db
+      - key: APPLICATION_SERVICE_URL
+        value: http://127.0.0.1:8001
+      - key: CREDIT_ENGINE_URL
+        value: http://127.0.0.1:8002
+      - key: RULE_SERVICE_URL
+        value: http://127.0.0.1:8003
+      - key: EXPLANATION_SERVICE_URL
+        value: http://127.0.0.1:8004
+      - key: AUDIT_SERVICE_URL
+        value: http://127.0.0.1:8005
+      - key: FAIRNESS_SERVICE_URL
+        value: http://127.0.0.1:8006
+    # Optional persistent disk for Starter plan and above (survives restarts)
+    # disk:
+    #   name: sahajcredit-data
+    #   mountPath: /app/data
+    #   sizeGB: 1

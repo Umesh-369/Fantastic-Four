@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { Scale, CheckCircle2, AlertCircle, ShieldAlert, Users } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const FairnessView: React.FC = () => {
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8006/v1/fairness/report")
+    fetch(`${getApiBaseUrl()}/v1/fairness/report`)
       .then((r) => r.json())
       .then((d) => {
         setReport(d);

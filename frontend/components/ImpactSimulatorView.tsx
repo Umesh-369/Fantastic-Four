@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Activity, Sliders, CheckCircle2, AlertTriangle, XCircle, Play, Cpu, ShieldCheck, AlertCircle } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 export const ImpactSimulatorView: React.FC = () => {
   const [simulationMode, setSimulationMode] = useState<"auto" | "manual">("auto");
@@ -40,7 +41,7 @@ export const ImpactSimulatorView: React.FC = () => {
   useEffect(() => {
     const loadVersions = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8003/v1/rules/versions");
+        const res = await fetch(`${getApiBaseUrl()}/v1/rules/versions`);
         if (res.ok) {
           const vers = await res.json();
           if (Array.isArray(vers) && vers.length > 0) {
@@ -84,7 +85,7 @@ export const ImpactSimulatorView: React.FC = () => {
           missing_data_ratio: 0.0,
         };
 
-        const ceRes = await fetch("http://127.0.0.1:8002/v1/credit-engine/score", {
+        const ceRes = await fetch(`${getApiBaseUrl()}/v1/credit-engine/score`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(cePayload),
@@ -111,7 +112,7 @@ export const ImpactSimulatorView: React.FC = () => {
         income_to_expense_ratio: 1.5,
       };
 
-      const res = await fetch(`http://127.0.0.1:8003/v1/rules/evaluate?version=${ruleVersion}`, {
+      const res = await fetch(`${getApiBaseUrl()}/v1/rules/evaluate?version=${ruleVersion}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(rulePayload),

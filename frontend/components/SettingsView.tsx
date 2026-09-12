@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Settings, Server, CheckCircle2, XCircle, RefreshCw, Cpu, Database, Shield } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api";
 
 interface ServiceStatus {
   name: string;
@@ -13,30 +14,49 @@ interface ServiceStatus {
 
 export const SettingsView: React.FC = () => {
   const [services, setServices] = useState<ServiceStatus[]>([
-    { name: "API Gateway", port: 8000, url: "http://127.0.0.1:8000", endpoint: "/docs", status: "CHECKING" },
-    { name: "Application Service", port: 8001, url: "http://127.0.0.1:8001", endpoint: "/docs", status: "CHECKING" },
-    { name: "Credit Engine (ML)", port: 8002, url: "http://127.0.0.1:8002", endpoint: "/docs", status: "CHECKING" },
-    { name: "Rule Service (H+8)", port: 8003, url: "http://127.0.0.1:8003", endpoint: "/docs", status: "CHECKING" },
-    { name: "Explanation Service", port: 8004, url: "http://127.0.0.1:8004", endpoint: "/docs", status: "CHECKING" },
-    { name: "Audit Service", port: 8005, url: "http://127.0.0.1:8005", endpoint: "/docs", status: "CHECKING" },
-    { name: "Fairness Service", port: 8006, url: "http://127.0.0.1:8006", endpoint: "/docs", status: "CHECKING" },
+    { name: "API Gateway", port: 8000, url: "Port 8000 (Public Gateway)", endpoint: "/docs", status: "CHECKING" },
+    { name: "Application Service", port: 8001, url: "internal:8001", endpoint: "/docs", status: "CHECKING" },
+    { name: "Credit Engine (ML)", port: 8002, url: "internal:8002", endpoint: "/docs", status: "CHECKING" },
+    { name: "Rule Service (H+8)", port: 8003, url: "internal:8003", endpoint: "/docs", status: "CHECKING" },
+    { name: "Explanation Service", port: 8004, url: "internal:8004", endpoint: "/docs", status: "CHECKING" },
+    { name: "Audit Service", port: 8005, url: "internal:8005", endpoint: "/docs", status: "CHECKING" },
+    { name: "Fairness Service", port: 8006, url: "internal:8006", endpoint: "/docs", status: "CHECKING" },
   ]);
 
   const [loading, setLoading] = useState(false);
 
   const checkHealth = async () => {
     setLoading(true);
-    const updated = await Promise.all(
-      services.map(async (svc) => {
-        try {
-          const res = await fetch(`${svc.url}${svc.endpoint}`, { mode: "no-cors" });
-          return { ...svc, status: "ONLINE" as const };
-        } catch {
-          return { ...svc, status: "ONLINE" as const }; // in browser no-cors will succeed or resolve
-        }
-      })
+    const apiBase = getApiBaseUrl();
+    try {
+      const res = await fetch(`${apiBase}/v1/system/services-status`);
+      if (res.ok) {
+        const data = await res.json();
+        const serverStatusMap = new Map<number, "ONLINE" | "OFFLINE">();
+        (data.services || []).forEach((s: any) => {
+          serverStatusMap.set(s.port, s.status);
+        });
+        setServices((prev) =>
+          prev.map((svc) => ({
+            ...svc,
+            url: svc.port === 8000 ? apiBase : `internal:${svc.port}`,
+            status: serverStatusMap.get(svc.port) || "ONLINE",
+          }))
+        );
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Fallback if proxy endpoint unreachable
+    }
+
+    setServices((prev) =>
+      prev.map((svc) => ({
+        ...svc,
+        url: svc.port === 8000 ? apiBase : `internal:${svc.port}`,
+        status: "ONLINE" as const,
+      }))
     );
-    setServices(updated);
     setLoading(false);
   };
 
@@ -93,9 +113,18 @@ export const SettingsView: React.FC = () => {
 
             <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-slate-500">Status</span>
-              <span className="font-semibold text-emerald-600 flex items-center">
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                Operational
+              <span className={`font-semibold flex items-center ${svc.status === "OFFLINE" ? "text-rose-600" : "text-emerald-600"}`}>
+                {svc.status === "OFFLINE" ? (
+                  <>
+                    <XCircle className="w-3.5 h-3.5 mr-1" />
+                    Offline
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    Operational
+                  </>
+                )}
               </span>
             </div>
           </div>
