@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Activity, Sliders, CheckCircle2, AlertTriangle, XCircle, Play, Cpu, ShieldCheck } from "lucide-react";
+import { Activity, Sliders, CheckCircle2, AlertTriangle, XCircle, Play, Cpu, ShieldCheck, AlertCircle } from "lucide-react";
 
 export const ImpactSimulatorView: React.FC = () => {
   const [simulationMode, setSimulationMode] = useState<"auto" | "manual">("auto");
@@ -15,6 +15,26 @@ export const ImpactSimulatorView: React.FC = () => {
   const [simulationResult, setSimulationResult] = useState<any>(null);
   const [mlScoreResult, setMlScoreResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  const blockPositiveNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["-", "+", "e", "E"].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const blockIntegerKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["-", "+", "e", "E", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const errors = {
+    monthlyIncome: monthlyIncome <= 0 || monthlyIncome > 10000000 ? "Income must be between ₹1 and ₹1,00,00,000." : null,
+    bounceCount: bounceCount < 0 || bounceCount > 50 || !Number.isInteger(bounceCount) ? "Bounces must be an integer between 0 and 50." : null,
+    fraudScore: fraudScore < 0 || fraudScore > 1 ? "Fraud score must be between 0.00 and 1.00." : null,
+    riskScore: riskScore < 0 || riskScore > 100 ? "Risk score must be between 0.0 and 100.0." : null,
+  };
+  const isInvalid = Boolean(errors.monthlyIncome || errors.bounceCount || errors.fraudScore || (simulationMode === "manual" && errors.riskScore));
 
   // Dynamically load rule versions from Rule Service
   useEffect(() => {
@@ -194,14 +214,25 @@ export const ImpactSimulatorView: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Monthly Income (₹)
+              Monthly Income (₹) <span className="text-rose-500">*</span>
             </label>
             <input
               type="number"
+              min="1"
+              max="10000000"
               value={monthlyIncome}
+              onKeyDown={blockPositiveNumericKeys}
               onChange={(e) => setMonthlyIncome(parseFloat(e.target.value) || 0)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800"
+              className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-800 transition-colors focus:outline-hidden ${
+                errors.monthlyIncome ? "border-rose-400 bg-rose-50/20 focus:border-rose-500" : "border-slate-200 focus:border-blue-500"
+              }`}
             />
+            {errors.monthlyIncome && (
+              <p className="text-[11px] text-rose-600 mt-1 flex items-center font-medium">
+                <AlertCircle className="w-3 h-3 mr-1 shrink-0" />
+                {errors.monthlyIncome}
+              </p>
+            )}
           </div>
 
           <div>
@@ -228,10 +259,21 @@ export const ImpactSimulatorView: React.FC = () => {
               <input
                 type="number"
                 min="0"
+                max="50"
+                step="1"
                 value={bounceCount}
+                onKeyDown={blockIntegerKeys}
                 onChange={(e) => setBounceCount(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800"
+                className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-800 transition-colors focus:outline-hidden ${
+                  errors.bounceCount ? "border-rose-400 bg-rose-50/20 focus:border-rose-500" : "border-slate-200 focus:border-blue-500"
+                }`}
               />
+              {errors.bounceCount && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center font-medium">
+                  <AlertCircle className="w-3 h-3 mr-1 shrink-0" />
+                  {errors.bounceCount}
+                </p>
+              )}
             </div>
 
             <div>
@@ -244,9 +286,18 @@ export const ImpactSimulatorView: React.FC = () => {
                 max="1"
                 step="0.01"
                 value={fraudScore}
+                onKeyDown={blockPositiveNumericKeys}
                 onChange={(e) => setFraudScore(parseFloat(e.target.value) || 0)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800"
+                className={`w-full bg-slate-50 border rounded-xl px-3.5 py-2 text-xs text-slate-800 transition-colors focus:outline-hidden ${
+                  errors.fraudScore ? "border-rose-400 bg-rose-50/20 focus:border-rose-500" : "border-slate-200 focus:border-blue-500"
+                }`}
               />
+              {errors.fraudScore && (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center font-medium">
+                  <AlertCircle className="w-3 h-3 mr-1 shrink-0" />
+                  {errors.fraudScore}
+                </p>
+              )}
             </div>
           </div>
 
@@ -276,8 +327,12 @@ export const ImpactSimulatorView: React.FC = () => {
 
           <button
             onClick={handleSimulate}
-            disabled={loading}
-            className="w-full mt-2 flex items-center justify-center space-x-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+            disabled={loading || isInvalid}
+            className={`w-full mt-2 flex items-center justify-center space-x-2 py-3 rounded-xl text-white text-xs font-bold shadow-md transition-all ${
+              loading || isInvalid
+                ? "bg-slate-300 cursor-not-allowed opacity-60 shadow-none"
+                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20 cursor-pointer"
+            }`}
           >
             <Play className="w-3.5 h-3.5" />
             <span>{loading ? "Simulating..." : "Execute Simulation"}</span>

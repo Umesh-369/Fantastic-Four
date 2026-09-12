@@ -66,113 +66,149 @@ export default function Home() {
   }, []);
 
   const handleSubmitApplication = async (dataToSubmit: any) => {
+    // Pre-flight check on required fields
+    if (!dataToSubmit.full_name?.trim() || dataToSubmit.full_name.trim().length < 2) {
+      alert("Please provide a valid applicant full name (at least 2 characters).");
+      return;
+    }
+    const phone = (dataToSubmit.phone_number || "").trim();
+    if (!/^[0-9]{10}$/.test(phone)) {
+      alert("Please provide a valid 10-digit Indian phone number.");
+      return;
+    }
+    const income = Number(dataToSubmit.monthly_income);
+    if (!income || income <= 0) {
+      alert("Please enter a valid monthly income greater than 0.");
+      return;
+    }
+    const loan = Number(dataToSubmit.requested_loan_amount);
+    if (!loan || loan <= 0) {
+      alert("Please enter a valid requested loan amount greater than 0.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const sanitized = {
-        ...dataToSubmit,
-        monthly_income: Number(dataToSubmit.monthly_income) || 0,
-        requested_loan_amount: Number(dataToSubmit.requested_loan_amount) || 0,
-        rent_payment_ratio:
-          dataToSubmit.rent_payment_ratio !== "" && dataToSubmit.rent_payment_ratio != null
-            ? Number(dataToSubmit.rent_payment_ratio)
-            : 0.85,
-        utility_payment_ratio:
-          dataToSubmit.utility_payment_ratio !== "" && dataToSubmit.utility_payment_ratio != null
-            ? Number(dataToSubmit.utility_payment_ratio)
-            : 0.85,
-        telecom_payment_ratio:
-          dataToSubmit.telecom_payment_ratio !== "" && dataToSubmit.telecom_payment_ratio != null
-            ? Number(dataToSubmit.telecom_payment_ratio)
-            : 0.85,
-        telecom_tenure_months:
-          dataToSubmit.telecom_tenure_months !== "" && dataToSubmit.telecom_tenure_months != null
-            ? Number(dataToSubmit.telecom_tenure_months)
-            : 36,
-        monthly_bank_inflow:
-          dataToSubmit.monthly_bank_inflow !== "" && dataToSubmit.monthly_bank_inflow != null
-            ? Number(dataToSubmit.monthly_bank_inflow)
-            : Number(dataToSubmit.monthly_income) || 35000,
-        monthly_bank_outflow:
-          dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null
-            ? Number(dataToSubmit.monthly_bank_outflow)
-            : (Number(dataToSubmit.monthly_income) || 35000) * 0.6,
-        avg_bank_balance:
-          dataToSubmit.avg_bank_balance !== "" && dataToSubmit.avg_bank_balance != null
-            ? Number(dataToSubmit.avg_bank_balance)
-            : 10000,
-        bounce_count_6m:
-          dataToSubmit.bounce_count_6m !== "" && dataToSubmit.bounce_count_6m != null
-            ? parseInt(dataToSubmit.bounce_count_6m)
-            : 0,
-        gig_monthly_earnings:
-          dataToSubmit.gig_monthly_earnings !== "" && dataToSubmit.gig_monthly_earnings != null
-            ? Number(dataToSubmit.gig_monthly_earnings)
-            : dataToSubmit.employment_type === "gig"
-            ? Number(dataToSubmit.monthly_income) || 25000
-            : 0,
-        gig_earnings_stability:
-          dataToSubmit.gig_earnings_stability !== "" && dataToSubmit.gig_earnings_stability != null
-            ? Number(dataToSubmit.gig_earnings_stability)
-            : 0.85,
-        gig_months_active:
-          dataToSubmit.gig_months_active !== "" && dataToSubmit.gig_months_active != null
-            ? Number(dataToSubmit.gig_months_active)
-            : 24,
-        gig_rating:
-          dataToSubmit.gig_rating !== "" && dataToSubmit.gig_rating != null
-            ? Number(dataToSubmit.gig_rating)
-            : 4.5,
-        income_to_expense_ratio:
-          dataToSubmit.income_to_expense_ratio !== "" && dataToSubmit.income_to_expense_ratio != null
-            ? Number(dataToSubmit.income_to_expense_ratio)
-            : (dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null ? Number(dataToSubmit.monthly_bank_outflow) : (Number(dataToSubmit.monthly_income) || 35000) * 0.6) > 0
-            ? Number(
-                (
-                  (dataToSubmit.monthly_bank_inflow !== "" && dataToSubmit.monthly_bank_inflow != null
-                    ? Number(dataToSubmit.monthly_bank_inflow)
-                    : Number(dataToSubmit.monthly_income) || 35000) /
-                  (dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null
-                    ? Number(dataToSubmit.monthly_bank_outflow)
-                    : (Number(dataToSubmit.monthly_income) || 35000) * 0.6)
-                ).toFixed(2)
-              )
-            : 1.5,
-        payment_consistency:
-          dataToSubmit.payment_consistency !== "" && dataToSubmit.payment_consistency != null
-            ? Number(dataToSubmit.payment_consistency)
-            : Number(
-                (
-                  ((dataToSubmit.rent_payment_ratio !== "" && dataToSubmit.rent_payment_ratio != null ? Number(dataToSubmit.rent_payment_ratio) : 0.85) +
-                    (dataToSubmit.utility_payment_ratio !== "" && dataToSubmit.utility_payment_ratio != null ? Number(dataToSubmit.utility_payment_ratio) : 0.85) +
-                    (dataToSubmit.telecom_payment_ratio !== "" && dataToSubmit.telecom_payment_ratio != null ? Number(dataToSubmit.telecom_payment_ratio) : 0.85)) /
-                  3
-                ).toFixed(2)
-              ),
-        data_conflict_count:
-          dataToSubmit.data_conflict_count !== "" && dataToSubmit.data_conflict_count != null
-            ? parseInt(dataToSubmit.data_conflict_count)
-            : 0,
-        fraud_risk_score:
-          dataToSubmit.fraud_risk_score !== "" && dataToSubmit.fraud_risk_score != null
-            ? Number(dataToSubmit.fraud_risk_score)
-            : 0.04,
-        missing_data_ratio:
-          dataToSubmit.missing_data_ratio !== "" && dataToSubmit.missing_data_ratio != null
-            ? Number(dataToSubmit.missing_data_ratio)
-            : 0.0,
+      const sanitized: Record<string, any> = {
+        full_name: dataToSubmit.full_name.trim(),
+        phone_number: phone,
+        employment_type: dataToSubmit.employment_type || "gig",
+        monthly_income: income,
+        requested_loan_amount: loan,
       };
+
+      if (dataToSubmit.date_of_birth) {
+        sanitized.date_of_birth = dataToSubmit.date_of_birth;
+      }
+
+      // Alternate data fields: only use defaults when field was left empty
+      sanitized.rent_payment_ratio =
+        dataToSubmit.rent_payment_ratio !== "" && dataToSubmit.rent_payment_ratio != null
+          ? Number(dataToSubmit.rent_payment_ratio)
+          : 0.85;
+
+      sanitized.utility_payment_ratio =
+        dataToSubmit.utility_payment_ratio !== "" && dataToSubmit.utility_payment_ratio != null
+          ? Number(dataToSubmit.utility_payment_ratio)
+          : 0.85;
+
+      sanitized.telecom_payment_ratio =
+        dataToSubmit.telecom_payment_ratio !== "" && dataToSubmit.telecom_payment_ratio != null
+          ? Number(dataToSubmit.telecom_payment_ratio)
+          : 0.85;
+
+      sanitized.telecom_tenure_months =
+        dataToSubmit.telecom_tenure_months !== "" && dataToSubmit.telecom_tenure_months != null
+          ? Number(dataToSubmit.telecom_tenure_months)
+          : 36.0;
+
+      sanitized.monthly_bank_inflow =
+        dataToSubmit.monthly_bank_inflow !== "" && dataToSubmit.monthly_bank_inflow != null
+          ? Number(dataToSubmit.monthly_bank_inflow)
+          : income;
+
+      sanitized.monthly_bank_outflow =
+        dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null
+          ? Number(dataToSubmit.monthly_bank_outflow)
+          : income * 0.6;
+
+      sanitized.avg_bank_balance =
+        dataToSubmit.avg_bank_balance !== "" && dataToSubmit.avg_bank_balance != null
+          ? Number(dataToSubmit.avg_bank_balance)
+          : 10000.0;
+
+      sanitized.bounce_count_6m =
+        dataToSubmit.bounce_count_6m !== "" && dataToSubmit.bounce_count_6m != null
+          ? parseInt(dataToSubmit.bounce_count_6m)
+          : 0;
+
+      sanitized.gig_monthly_earnings =
+        dataToSubmit.gig_monthly_earnings !== "" && dataToSubmit.gig_monthly_earnings != null
+          ? Number(dataToSubmit.gig_monthly_earnings)
+          : (dataToSubmit.employment_type === "gig" ? income : 0.0);
+
+      sanitized.gig_earnings_stability =
+        dataToSubmit.gig_earnings_stability !== "" && dataToSubmit.gig_earnings_stability != null
+          ? Number(dataToSubmit.gig_earnings_stability)
+          : 0.85;
+
+      sanitized.gig_months_active =
+        dataToSubmit.gig_months_active !== "" && dataToSubmit.gig_months_active != null
+          ? Number(dataToSubmit.gig_months_active)
+          : 24.0;
+
+      sanitized.gig_rating =
+        dataToSubmit.gig_rating !== "" && dataToSubmit.gig_rating != null
+          ? Number(dataToSubmit.gig_rating)
+          : 4.5;
+
+      sanitized.income_to_expense_ratio =
+        dataToSubmit.income_to_expense_ratio !== "" && dataToSubmit.income_to_expense_ratio != null
+          ? Number(dataToSubmit.income_to_expense_ratio)
+          : (sanitized.monthly_bank_outflow > 0
+            ? Number((sanitized.monthly_bank_inflow / sanitized.monthly_bank_outflow).toFixed(2))
+            : 1.5);
+
+      sanitized.payment_consistency =
+        dataToSubmit.payment_consistency !== "" && dataToSubmit.payment_consistency != null
+          ? Number(dataToSubmit.payment_consistency)
+          : Number(((sanitized.rent_payment_ratio + sanitized.utility_payment_ratio + sanitized.telecom_payment_ratio) / 3).toFixed(2));
+
+      sanitized.data_conflict_count =
+        dataToSubmit.data_conflict_count !== "" && dataToSubmit.data_conflict_count != null
+          ? parseInt(dataToSubmit.data_conflict_count)
+          : 0;
+
+      sanitized.fraud_risk_score =
+        dataToSubmit.fraud_risk_score !== "" && dataToSubmit.fraud_risk_score != null
+          ? Number(dataToSubmit.fraud_risk_score)
+          : 0.04;
+
+      sanitized.missing_data_ratio =
+        dataToSubmit.missing_data_ratio !== "" && dataToSubmit.missing_data_ratio != null
+          ? Number(dataToSubmit.missing_data_ratio)
+          : 0.0;
 
       const res = await fetch("http://127.0.0.1:8000/v1/decisions/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sanitized),
       });
+
       if (res.ok) {
         const result = await res.json();
         setDecisionData(result);
         await loadDashboardSummary();
       } else {
-        alert("Evaluation failed: " + (await res.text()));
+        const errorData = await res.json().catch(() => null);
+        if (res.status === 422 && errorData && errorData.detail) {
+          const detailMsgs = Array.isArray(errorData.detail)
+            ? errorData.detail.map((d: any) => `${d.loc?.slice(1).join(".") || "Field"}: ${d.msg}`).join("\n")
+            : JSON.stringify(errorData.detail);
+          alert("Input Validation Rejected (422):\n" + detailMsgs);
+        } else {
+          alert("Evaluation failed: " + (errorData?.detail || res.statusText));
+        }
       }
     } catch (e: any) {
       alert("Error submitting application: " + e.message);

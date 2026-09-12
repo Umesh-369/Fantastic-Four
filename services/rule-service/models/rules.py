@@ -1,14 +1,14 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 
 class RuleEvaluateRequest(BaseModel):
     risk_score: float = Field(..., ge=0.0, le=100.0)
-    monthly_income: float = Field(..., ge=0.0)
-    bounce_count_6m: Optional[int] = 0
-    fraud_risk_score: Optional[float] = 0.0
-    data_conflict_count: Optional[int] = 0
-    rent_payment_ratio: Optional[float] = None
-    income_to_expense_ratio: Optional[float] = None
+    monthly_income: float = Field(..., ge=0.0, le=100_000_000.0)
+    bounce_count_6m: Optional[int] = Field(0, ge=0, le=100)
+    fraud_risk_score: Optional[float] = Field(0.0, ge=0.0, le=1.0)
+    data_conflict_count: Optional[int] = Field(0, ge=0, le=100)
+    rent_payment_ratio: Optional[float] = Field(None, ge=0.0, le=1.0)
+    income_to_expense_ratio: Optional[float] = Field(None, ge=0.0, le=100.0)
 
     @model_validator(mode="before")
     @classmethod
@@ -23,7 +23,7 @@ class RuleEvaluateRequest(BaseModel):
         return data
 
 class RuleEvaluateResponse(BaseModel):
-    decision: str = Field(..., description="APPROVE | REVIEW | REJECT")
+    decision: Literal["APPROVE", "REVIEW", "REJECT"] = Field(..., description="APPROVE | REVIEW | REJECT")
     rule_version: str
     reasons: List[str]
     applied_thresholds: Dict[str, Any]
