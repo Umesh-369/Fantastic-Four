@@ -21,8 +21,8 @@ def handle_verify():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/records")
-def handle_list_records(limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0)):
-    return list_records(limit=limit, offset=offset)
+def handle_list_records(limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0), include_test: bool = Query(False)):
+    return list_records(limit=limit, offset=offset, include_test=include_test)
 
 @router.get("/{audit_id}", response_model=None)
 def handle_get_record(audit_id: str):

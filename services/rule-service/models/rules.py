@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List, Dict, Any
 
 class RuleEvaluateRequest(BaseModel):
@@ -9,6 +9,18 @@ class RuleEvaluateRequest(BaseModel):
     data_conflict_count: Optional[int] = 0
     rent_payment_ratio: Optional[float] = None
     income_to_expense_ratio: Optional[float] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def clean_empty_strings(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            cleaned = {}
+            for k, v in data.items():
+                if v == "":
+                    continue
+                cleaned[k] = v
+            return cleaned
+        return data
 
 class RuleEvaluateResponse(BaseModel):
     decision: str = Field(..., description="APPROVE | REVIEW | REJECT")

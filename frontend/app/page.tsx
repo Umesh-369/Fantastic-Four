@@ -35,8 +35,8 @@ const emptyFormData = {
   gig_earnings_stability: "",
   gig_months_active: "",
   gig_rating: "",
-  income_to_expense_ratio: "",
-  payment_consistency: "",
+  income_to_expense_ratio: 1.5,
+  payment_consistency: 0.88,
   data_conflict_count: 0,
   fraud_risk_score: 0.04,
   missing_data_ratio: 0.0,
@@ -122,6 +122,44 @@ export default function Home() {
           dataToSubmit.gig_rating !== "" && dataToSubmit.gig_rating != null
             ? Number(dataToSubmit.gig_rating)
             : 4.5,
+        income_to_expense_ratio:
+          dataToSubmit.income_to_expense_ratio !== "" && dataToSubmit.income_to_expense_ratio != null
+            ? Number(dataToSubmit.income_to_expense_ratio)
+            : (dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null ? Number(dataToSubmit.monthly_bank_outflow) : (Number(dataToSubmit.monthly_income) || 35000) * 0.6) > 0
+            ? Number(
+                (
+                  (dataToSubmit.monthly_bank_inflow !== "" && dataToSubmit.monthly_bank_inflow != null
+                    ? Number(dataToSubmit.monthly_bank_inflow)
+                    : Number(dataToSubmit.monthly_income) || 35000) /
+                  (dataToSubmit.monthly_bank_outflow !== "" && dataToSubmit.monthly_bank_outflow != null
+                    ? Number(dataToSubmit.monthly_bank_outflow)
+                    : (Number(dataToSubmit.monthly_income) || 35000) * 0.6)
+                ).toFixed(2)
+              )
+            : 1.5,
+        payment_consistency:
+          dataToSubmit.payment_consistency !== "" && dataToSubmit.payment_consistency != null
+            ? Number(dataToSubmit.payment_consistency)
+            : Number(
+                (
+                  ((dataToSubmit.rent_payment_ratio !== "" && dataToSubmit.rent_payment_ratio != null ? Number(dataToSubmit.rent_payment_ratio) : 0.85) +
+                    (dataToSubmit.utility_payment_ratio !== "" && dataToSubmit.utility_payment_ratio != null ? Number(dataToSubmit.utility_payment_ratio) : 0.85) +
+                    (dataToSubmit.telecom_payment_ratio !== "" && dataToSubmit.telecom_payment_ratio != null ? Number(dataToSubmit.telecom_payment_ratio) : 0.85)) /
+                  3
+                ).toFixed(2)
+              ),
+        data_conflict_count:
+          dataToSubmit.data_conflict_count !== "" && dataToSubmit.data_conflict_count != null
+            ? parseInt(dataToSubmit.data_conflict_count)
+            : 0,
+        fraud_risk_score:
+          dataToSubmit.fraud_risk_score !== "" && dataToSubmit.fraud_risk_score != null
+            ? Number(dataToSubmit.fraud_risk_score)
+            : 0.04,
+        missing_data_ratio:
+          dataToSubmit.missing_data_ratio !== "" && dataToSubmit.missing_data_ratio != null
+            ? Number(dataToSubmit.missing_data_ratio)
+            : 0.0,
       };
 
       const res = await fetch("http://127.0.0.1:8000/v1/decisions/evaluate", {

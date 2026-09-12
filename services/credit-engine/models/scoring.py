@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Dict, Any
 
 class ScoreRequest(BaseModel):
@@ -20,6 +20,18 @@ class ScoreRequest(BaseModel):
     data_conflict_count: Optional[int] = 0
     fraud_risk_score: Optional[float] = 0.05
     missing_data_ratio: Optional[float] = 0.0
+
+    @model_validator(mode="before")
+    @classmethod
+    def clean_empty_strings(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            cleaned = {}
+            for k, v in data.items():
+                if v == "" and k != "employment_type":
+                    continue
+                cleaned[k] = v
+            return cleaned
+        return data
 
 class ScoreResponse(BaseModel):
     risk_score: float = Field(..., ge=0.0, le=100.0, description="Calibrated credit risk score (0-100)")

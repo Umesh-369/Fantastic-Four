@@ -4,7 +4,7 @@ Precision,0.8505,> 0.7500,PASS
 Recall,0.7562,> 0.7000,PASS
 F1 Score,0.8006,> 0.7500,PASS
 ROC-AUC,0.9736,> 0.9000,PASS
-Latency p50 (ms),7.57,< 50 ms,PASS
-Latency p95 (ms),9.71,< 100 ms,PASS
-Latency p99 (ms),12.12,< 200 ms,PASS
+Latency p50 (ms),7.82,< 50 ms,PASS
+Latency p95 (ms),9.93,< 100 ms,PASS
+Latency p99 (ms),14.49,< 200 ms,PASS
 Schema Compliance,100.0%,100%,PASS

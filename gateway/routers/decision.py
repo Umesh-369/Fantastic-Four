@@ -1,4 +1,5 @@
 import os
+import time
 import httpx
 from fastapi import APIRouter, HTTPException, status
 from models.gateway import DecisionRequest, DecisionResponse, ExplanationObject
@@ -13,6 +14,7 @@ AUDIT_SERVICE_URL = os.environ.get("AUDIT_SERVICE_URL", "http://localhost:8005")
 
 @router.post("/decisions/evaluate", response_model=DecisionResponse, status_code=status.HTTP_200_OK)
 async def evaluate_decision(payload: DecisionRequest):
+    start_time = time.perf_counter()
     req_dict = payload.model_dump()
 
     async with httpx.AsyncClient(timeout=15.0) as client:
@@ -114,6 +116,7 @@ async def evaluate_decision(payload: DecisionRequest):
             )
 
         # 5. Record immutable entry in Audit Service
+        decision_time_sec = round(time.perf_counter() - start_time, 3)
         audit_payload = {
             "applicant_id": applicant_id,
             "applicant_inputs": req_dict,
@@ -124,7 +127,8 @@ async def evaluate_decision(payload: DecisionRequest):
             "feature_vector_hash": feature_hash,
             "risk_score": risk_score,
             "decision": decision,
-            "explanation_summary": explanation.summary_text
+            "explanation_summary": explanation.summary_text,
+            "decision_time_sec": decision_time_sec
         }
 
         try:

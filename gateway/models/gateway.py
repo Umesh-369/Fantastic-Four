@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List, Dict, Any
 
 class DecisionRequest(BaseModel):
@@ -28,6 +28,18 @@ class DecisionRequest(BaseModel):
     data_conflict_count: Optional[int] = 0
     fraud_risk_score: Optional[float] = 0.05
     missing_data_ratio: Optional[float] = 0.0
+
+    @model_validator(mode="before")
+    @classmethod
+    def clean_empty_strings(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            cleaned = {}
+            for k, v in data.items():
+                if v == "" and k not in ("full_name", "phone_number", "employment_type"):
+                    continue
+                cleaned[k] = v
+            return cleaned
+        return data
 
 class ExplanationObject(BaseModel):
     positive_factors: List[str]

@@ -125,8 +125,22 @@ def test_full_decision_flow_approve(mock_gateway):
     assert data_adverse["risk_score"] > prime_score
     assert data_adverse["decision"] == "REJECT"
 
-    # Explanation factors must differ meaningfully
     assert len(data_adverse["explanation"]["negative_factors"]) > 0
     prime_pos = " ".join(data["explanation"]["positive_factors"])
     adverse_neg = " ".join(data_adverse["explanation"]["negative_factors"])
     assert prime_pos != adverse_neg
+
+    # Test payload with empty strings (verifying float_parsing resilience)
+    payload_empty_strings = dict(payload_prime)
+    payload_empty_strings["full_name"] = "Pooja Sharma"
+    payload_empty_strings["income_to_expense_ratio"] = ""
+    payload_empty_strings["payment_consistency"] = ""
+    payload_empty_strings["rent_payment_ratio"] = ""
+    payload_empty_strings["telecom_tenure_months"] = ""
+
+    resp_empty = client.post("/v1/decisions/evaluate", json=payload_empty_strings)
+    assert resp_empty.status_code == 200
+    data_empty = resp_empty.json()
+    assert "decision" in data_empty
+    assert "risk_score" in data_empty
+

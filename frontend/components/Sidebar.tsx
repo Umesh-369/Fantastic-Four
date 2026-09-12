@@ -3,7 +3,6 @@
 import React from "react";
 import {
   LayoutDashboard,
-  FilePlus,
   Users,
   Clock,
   Sliders,
@@ -24,7 +23,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "new_app", label: "New Application", icon: FilePlus },
     { id: "applicants", label: "Applicants", icon: Users },
     { id: "history", label: "Decision History", icon: Clock },
     { id: "rules", label: "Rule Manager", icon: Sliders },

@@ -1,23 +1,88 @@
 "use client";
 
-import React, { useState } from "react";
-import { Activity, Sliders, CheckCircle2, AlertTriangle, XCircle, Play } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Activity, Sliders, CheckCircle2, AlertTriangle, XCircle, Play, Cpu, ShieldCheck } from "lucide-react";
 
 export const ImpactSimulatorView: React.FC = () => {
+  const [simulationMode, setSimulationMode] = useState<"auto" | "manual">("auto");
   const [riskScore, setRiskScore] = useState(42.5);
   const [monthlyIncome, setMonthlyIncome] = useState(35000);
   const [bounceCount, setBounceCount] = useState(0);
   const [fraudScore, setFraudScore] = useState(0.04);
   const [rentRatio, setRentRatio] = useState(0.92);
   const [ruleVersion, setRuleVersion] = useState("v1.0.0");
+  const [availableVersions, setAvailableVersions] = useState<any[]>([]);
   const [simulationResult, setSimulationResult] = useState<any>(null);
+  const [mlScoreResult, setMlScoreResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  // Dynamically load rule versions from Rule Service
+  useEffect(() => {
+    const loadVersions = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8003/v1/rules/versions");
+        if (res.ok) {
+          const vers = await res.json();
+          if (Array.isArray(vers) && vers.length > 0) {
+            setAvailableVersions(vers);
+            const active = vers.find((v: any) => v.is_active);
+            if (active) setRuleVersion(active.version);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load rule versions:", e);
+      }
+    };
+    loadVersions();
+  }, []);
 
   const handleSimulate = async () => {
     setLoading(true);
     try {
-      const payload = {
-        risk_score: riskScore,
+      let scoreToEvaluate = riskScore;
+
+      // 1. If in Auto Mode, derive real ML risk score via Credit Engine
+      if (simulationMode === "auto") {
+        const cePayload = {
+          employment_type: "gig",
+          rent_payment_ratio: rentRatio,
+          utility_payment_ratio: 0.90,
+          telecom_payment_ratio: 0.92,
+          telecom_tenure_months: 36.0,
+          monthly_bank_inflow: monthlyIncome,
+          monthly_bank_outflow: monthlyIncome * 0.65,
+          avg_bank_balance: monthlyIncome * 0.35,
+          bounce_count_6m: bounceCount,
+          gig_monthly_earnings: monthlyIncome * 0.75,
+          gig_earnings_stability: 0.85,
+          gig_months_active: 24.0,
+          gig_rating: 4.6,
+          income_to_expense_ratio: 1.54,
+          payment_consistency: 0.91,
+          data_conflict_count: 0,
+          fraud_risk_score: fraudScore,
+          missing_data_ratio: 0.0,
+        };
+
+        const ceRes = await fetch("http://127.0.0.1:8002/v1/credit-engine/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cePayload),
+        });
+
+        if (ceRes.ok) {
+          const ceData = await ceRes.json();
+          scoreToEvaluate = ceData.risk_score;
+          setRiskScore(ceData.risk_score);
+          setMlScoreResult(ceData);
+        }
+      } else {
+        setMlScoreResult(null);
+      }
+
+      // 2. Evaluate Rule Service
+      const rulePayload = {
+        risk_score: scoreToEvaluate,
         monthly_income: monthlyIncome,
         bounce_count_6m: bounceCount,
         fraud_risk_score: fraudScore,
@@ -29,11 +94,13 @@ export const ImpactSimulatorView: React.FC = () => {
       const res = await fetch(`http://127.0.0.1:8003/v1/rules/evaluate?version=${ruleVersion}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(rulePayload),
       });
 
       if (res.ok) {
-        setSimulationResult(await res.json());
+        const data = await res.json();
+        data.evaluated_score = scoreToEvaluate;
+        setSimulationResult(data);
       }
     } catch (e) {
       console.error("Simulation error:", e);
@@ -53,7 +120,7 @@ export const ImpactSimulatorView: React.FC = () => {
           <div>
             <h2 className="text-xl font-bold text-slate-900">Policy Impact & What-If Simulator</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Simulate how risk thresholds and alternate data indicators influence underwriting decisions in real time.
+              Simulate how ML risk scoring and externalized rule policies determine underwriting decisions in real time.
             </p>
           </div>
         </div>
@@ -62,14 +129,53 @@ export const ImpactSimulatorView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Inputs Card */}
         <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center">
-            <Sliders className="w-4 h-4 text-blue-600 mr-2" />
-            Simulation Parameters
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center">
+              <Sliders className="w-4 h-4 text-blue-600 mr-2" />
+              Simulation Mode
+            </h3>
+            {/* Mode Switch Tabs */}
+            <div className="flex bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setSimulationMode("auto")}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  simulationMode === "auto"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Model + Rules
+              </button>
+              <button
+                type="button"
+                onClick={() => setSimulationMode("manual")}
+                className={`px-3 py-1 rounded-lg transition-all ${
+                  simulationMode === "manual"
+                    ? "bg-white text-blue-600 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Manual Score
+              </button>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+            {simulationMode === "auto" ? (
+              <span>
+                <strong className="text-blue-600">Auto Mode (Model + Rules):</strong> Feature inputs below are processed by the real <strong>Credit Engine</strong> ML model to derive the risk score, which is then evaluated by the <strong>Rule Engine</strong>.
+              </span>
+            ) : (
+              <span>
+                <strong className="text-amber-600">Manual Override Mode:</strong> The Risk Score slider value is sent directly to the <strong>Rule Engine</strong> to test policy cutoffs independently of the ML model.
+              </span>
+            )}
+          </div>
 
           <div>
             <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-              <span>Risk Score (0 - 100)</span>
+              <span>Risk Score (0 - 100) {simulationMode === "auto" && "(Derived by ML)"}</span>
               <span className="font-mono text-blue-600 font-bold">{riskScore.toFixed(1)}</span>
             </div>
             <input
@@ -78,8 +184,11 @@ export const ImpactSimulatorView: React.FC = () => {
               max="100"
               step="0.5"
               value={riskScore}
+              disabled={simulationMode === "auto"}
               onChange={(e) => setRiskScore(parseFloat(e.target.value))}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
+                simulationMode === "auto" ? "bg-slate-100 opacity-60" : "bg-slate-200"
+              }`}
             />
           </div>
 
@@ -150,8 +259,18 @@ export const ImpactSimulatorView: React.FC = () => {
               onChange={(e) => setRuleVersion(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-700 font-medium"
             >
-              <option value="v1.0.0">v1.0.0 (Standard Thresholds)</option>
-              <option value="v1.1.0">v1.1.0 (Higher Rent Flexibility)</option>
+              {availableVersions.length > 0 ? (
+                availableVersions.map((v: any) => (
+                  <option key={v.version} value={v.version}>
+                    {v.version} {v.description ? `(${v.description})` : ""} {v.is_active ? "— Active" : ""}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="v1.0.0">v1.0.0 (Standard Thresholds)</option>
+                  <option value="v1.1.0">v1.1.0 (Higher Rent Flexibility)</option>
+                </>
+              )}
             </select>
           </div>
 
@@ -194,23 +313,29 @@ export const ImpactSimulatorView: React.FC = () => {
 
                 <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2 text-xs">
                   <div className="text-[11px] font-bold text-blue-900 uppercase tracking-wide">
-                    Rule Evaluation Details
+                    Evaluation Details
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-slate-700">
                     <div>Policy: <strong className="font-mono">{simulationResult.rule_version}</strong></div>
-                    <div>Confidence: <strong>{(simulationResult.confidence * 100).toFixed(0)}%</strong></div>
+                    <div>Evaluated Risk Score: <strong className="font-mono text-blue-600">{Number(simulationResult.evaluated_score ?? riskScore).toFixed(1)}</strong></div>
+                    {mlScoreResult && (
+                      <>
+                        <div>ML Model: <strong className="font-mono">{mlScoreResult.model_version}</strong></div>
+                        <div>Features Used: <strong>{mlScoreResult.features_used}</strong></div>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {simulationResult.rules_triggered?.length > 0 && (
+                {simulationResult.reasons?.length > 0 && (
                   <div className="space-y-2">
                     <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                      Rules Triggered
+                      Decision Drivers & Rule Triggers
                     </div>
                     <div className="space-y-1.5">
-                      {simulationResult.rules_triggered.map((rule: string, idx: number) => (
+                      {simulationResult.reasons.map((reason: string, idx: number) => (
                         <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700">
-                          {rule}
+                          {reason}
                         </div>
                       ))}
                     </div>

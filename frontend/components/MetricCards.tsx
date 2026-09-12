@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, CheckCircle, XCircle, Clock, Check } from "lucide-react";
+import { Users, CheckCircle, XCircle, Clock, Check, AlertTriangle } from "lucide-react";
 
 interface MetricsData {
   total_applications: number;
@@ -24,10 +24,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
   const approvedPct = metrics?.approved_pct ?? 0;
   const rejected = metrics?.rejected_count ?? 0;
   const rejectedPct = metrics?.rejected_pct ?? 0;
+  const reviewed = metrics?.review_count ?? 0;
+  const reviewPct = metrics?.review_pct ?? 0;
   const avgTime = metrics?.avg_decision_time_sec ?? 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
       {/* 1. Total Applications */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
@@ -69,7 +71,27 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      {/* 3. Rejected */}
+      {/* 3. Under Review */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-slate-900 tracking-tight">
+              {reviewed.toLocaleString()}
+            </div>
+            <div className="text-xs font-medium text-slate-500 mt-0.5">
+              Under Review
+            </div>
+          </div>
+        </div>
+        <div className="text-[11px] font-semibold text-amber-700 bg-amber-100/70 px-2.5 py-1 rounded-full">
+          {reviewPct.toFixed(1)}%
+        </div>
+      </div>
+
+      {/* 4. Rejected */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
           <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center">
@@ -89,7 +111,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
         </div>
       </div>
 
-      {/* 4. Average Decision Time */}
+      {/* 5. Average Decision Time */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div className="flex items-center space-x-3.5">
           <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
@@ -97,7 +119,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {Math.round(avgTime)} sec
+              {avgTime > 0 ? `${avgTime.toFixed(1)} sec` : "0 sec"}
             </div>
             <div className="text-xs font-medium text-slate-500 mt-0.5">
               Average Decision Time
@@ -112,3 +134,4 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
     </div>
   );
 };
+

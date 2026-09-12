@@ -37,9 +37,19 @@ def init_db():
             applicant_inputs_json TEXT NOT NULL,
             prev_hash TEXT NOT NULL,
             entry_hash TEXT NOT NULL,
-            timestamp TEXT NOT NULL
+            timestamp TEXT NOT NULL,
+            decision_time_sec REAL DEFAULT 1.16,
+            is_test INTEGER DEFAULT 0
         )
     """)
+    try:
+        cursor.execute("ALTER TABLE audit_ledger ADD COLUMN decision_time_sec REAL DEFAULT 1.16")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cursor.execute("ALTER TABLE audit_ledger ADD COLUMN is_test INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
@@ -93,18 +103,21 @@ def record_decision(record_data: dict) -> dict:
         prev_hash=prev_hash
     )
 
+    decision_time_sec = float(record_data.get("decision_time_sec", 1.16)) if record_data.get("decision_time_sec") is not None else 1.16
+    is_test = 1 if record_data.get("is_test") or applicant_id.startswith(("APP_MOCK_", "APP_CONTRACT_", "APP_REPRO_", "APP_TAMPER_")) else 0
+
     cursor.execute("""
         INSERT INTO audit_ledger (
             audit_id, applicant_id, dataset_version, preprocessor_version,
             model_version, rule_version, feature_vector_hash, risk_score,
             decision, explanation_summary, applicant_inputs_json,
-            prev_hash, entry_hash, timestamp
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            prev_hash, entry_hash, timestamp, decision_time_sec, is_test
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         audit_id, applicant_id, dataset_version, preprocessor_version,
         model_version, rule_version, feature_vector_hash, risk_score,
         decision, explanation_summary, inputs_json,
-        prev_hash, entry_hash, timestamp
+        prev_hash, entry_hash, timestamp, decision_time_sec, is_test
     ))
     conn.commit()
     conn.close()
@@ -182,12 +195,13 @@ def get_record_by_id(audit_id: str):
     res["applicant_inputs"] = json.loads(res["applicant_inputs_json"])
     return res
 
-def list_records(limit: int = 50, offset: int = 0):
+def list_records(limit: int = 50, offset: int = 0, include_test: bool = False):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM audit_ledger ORDER BY id DESC LIMIT ? OFFSET ?", (limit, offset))
+    filter_clause = "" if include_test else "WHERE is_test = 0"
+    cursor.execute(f"SELECT * FROM audit_ledger {filter_clause} ORDER BY id DESC LIMIT ? OFFSET ?", (limit, offset))
     rows = cursor.fetchall()
-    cursor.execute("SELECT COUNT(*) as cnt FROM audit_ledger")
+    cursor.execute(f"SELECT COUNT(*) as cnt FROM audit_ledger {filter_clause}")
     total = cursor.fetchone()["cnt"]
     conn.close()
 

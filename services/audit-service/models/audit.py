@@ -12,6 +12,8 @@ class AuditRecordRequest(BaseModel):
     risk_score: float
     decision: str
     explanation_summary: str
+    decision_time_sec: Optional[float] = None
+    is_test: Optional[bool] = False
 
 class AuditRecordResponse(BaseModel):
     audit_id: str

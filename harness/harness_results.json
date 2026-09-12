@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-12T07:22:33Z",
+  "timestamp": "2026-09-12T10:39:21Z",
   "dataset": {
     "total_records": 10000,
     "test_split_size": 2000,
@@ -13,11 +13,11 @@
     "roc_auc": 0.9736
   },
   "latency_percentiles_ms": {
-    "mean": 7.97,
-    "p50": 7.57,
-    "p90": 9.19,
-    "p95": 9.71,
-    "p99": 12.12
+    "mean": 8.15,
+    "p50": 7.82,
+    "p90": 9.11,
+    "p95": 9.93,
+    "p99": 14.49
   },
   "contract_and_schema": {
     "total_samples_checked": 500,

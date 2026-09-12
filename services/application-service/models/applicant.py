@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional, Any
 from datetime import date, datetime
 
 class ApplicantCreate(BaseModel):
@@ -28,6 +28,18 @@ class ApplicantCreate(BaseModel):
     data_conflict_count: Optional[int] = Field(0, ge=0)
     fraud_risk_score: Optional[float] = Field(0.0, ge=0.0, le=1.0)
     missing_data_ratio: Optional[float] = Field(0.0, ge=0.0, le=1.0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def clean_empty_strings(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            cleaned = {}
+            for k, v in data.items():
+                if v == "" and k not in ("full_name", "phone_number", "employment_type"):
+                    continue
+                cleaned[k] = v
+            return cleaned
+        return data
 
 class ApplicantResponse(ApplicantCreate):
     applicant_id: str
