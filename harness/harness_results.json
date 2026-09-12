@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-09-12T07:22:33Z",
+  "dataset": {
+    "total_records": 10000,
+    "test_split_size": 2000,
+    "features_evaluated": 18
+  },
+  "classification_metrics": {
+    "accuracy": 0.932,
+    "precision": 0.8505,
+    "recall": 0.7562,
+    "f1_score": 0.8006,
+    "roc_auc": 0.9736
+  },
+  "latency_percentiles_ms": {
+    "mean": 7.97,
+    "p50": 7.57,
+    "p90": 9.19,
+    "p95": 9.71,
+    "p99": 12.12
+  },
+  "contract_and_schema": {
+    "total_samples_checked": 500,
+    "schema_compliant_count": 500,
+    "compliance_rate_pct": 100.0,
+    "status": "PASS"
+  }
+}
