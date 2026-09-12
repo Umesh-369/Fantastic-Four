@@ -1,0 +1,43 @@
+{
+  "model_version": "v1.0.0",
+  "random_seed": 42,
+  "test_size": 0.2,
+  "n_train_samples": 8000,
+  "n_test_samples": 2000,
+  "accuracy": 0.932,
+  "precision": 0.8505,
+  "recall": 0.7562,
+  "f1": 0.8006,
+  "roc_auc": 0.9736,
+  "features": {
+    "numeric": [
+      "rent_payment_ratio",
+      "utility_payment_ratio",
+      "telecom_payment_ratio",
+      "telecom_tenure_months",
+      "monthly_bank_inflow",
+      "monthly_bank_outflow",
+      "avg_bank_balance",
+      "bounce_count_6m",
+      "gig_monthly_earnings",
+      "gig_earnings_stability",
+      "gig_months_active",
+      "gig_rating",
+      "income_to_expense_ratio",
+      "payment_consistency",
+      "data_conflict_count",
+      "fraud_risk_score",
+      "missing_data_ratio"
+    ],
+    "categorical": [
+      "employment_type"
+    ],
+    "excluded_leakage_columns": [
+      "applicant_id",
+      "credit_risk_score",
+      "decision",
+      "falsified_record_flag",
+      "falsification_type"
+    ]
+  }
+}
