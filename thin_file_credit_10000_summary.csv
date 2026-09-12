@@ -1,0 +1,9 @@
+metric,value
+rows,10000.0
+columns,23.0
+approve_pct,61.98
+refer_pct,19.99
+decline_pct,18.03
+rows_with_conflicts_pct,8.06
+falsified_records_pct,3.42
+mean_missing_data_ratio,0.0643
