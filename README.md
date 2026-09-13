@@ -568,9 +568,3 @@ SahajCredit/
 ```
 
 ---
-
-## 13. Team & Attribution
-
-**Team Name**: Fantastic Four  
-**Event**: VTapp — Round 02  
-*For an exhaustive, component-by-component audit of AI collaboration, human architecture decisions, and code provenance, refer to [AI_LEDGER.md](AI_LEDGER.md).*
